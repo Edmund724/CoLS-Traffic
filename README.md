@@ -37,6 +37,7 @@ gra/
 │   ├── config_hw.py            # 搜索配置（硬件约束参数）
 │   ├── search_space_hw.py      # 搜索空间定义
 │   ├── checkpoint_naming.py    # 检查点命名工具
+│   ├── dataset.py              # CIFAR-10 数据加载
 │   └── models/                 # MBConv / MobileNetV3 骨干模块
 │
 ├── hw_prediction/              # 硬件性能预测（MLP 代理模型）
@@ -187,13 +188,15 @@ python -m deploy.edge_cloud_collab.simulator \
 
 | 报告 | 内容 |
 |------|------|
-| `CHANGELOG.md` | 开发日志与版本变更 |
-| `qat_implementation_report.md` | QAT 量化训练实现细节 |
+| `CHANGELOG.md` | 开发日志与版本变更（权威版） |
+| `qat_implementation_report.md` | QAT 量化训练实现与 PTQ 对比分析 |
 | `tensorrt_deployment_and_optimization_materials.md` | TensorRT 部署与优化 |
 | `dynamic_routing_strategy.md` | 动态路由策略设计 |
 | `double_buffer_pipeline.md` | 双缓冲流水线设计 |
 | `power_efficiency_calculation.md` | 能效比计算与分析 |
 | `graduation_thesis_report.md` | 毕业设计综合报告 |
+| `thesis_tables.md` | 论文可直接引用的表格（Markdown + LaTeX） |
+| `figures/` | 报告用图片（性能曲线、对比图表等） |
 
 ---
 

@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, transforms
 
-from .config import CIFAR10_ROOT, BATCH_SIZE
+from .config_hw import CIFAR10_ROOT, BATCH_SIZE
 
 
 def get_cifar10_loaders(

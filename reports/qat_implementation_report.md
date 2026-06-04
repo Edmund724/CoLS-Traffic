@@ -357,4 +357,57 @@ if device.isdigit():
 
 ---
 
+## 十、PTQ vs QAT 对照实验详细分析
+
+### 10.1 对照实验流程
+
+```
+FP32 Baseline
+  └─ 加载 best_ema.pt，BN 设为 eval，直接跑 val mAP
+
+PTQ Branch
+  └─ 加载同一 best_ema.pt
+  └─ quant_modules.initialize() 全局替换 Conv2d → QuantConv2d
+  └─ 禁用 Detect Head 中 25 个 quantizer
+  └─ 冻结 BN running stats
+  └─ 256 batches MaxCalibrator 前向校准（load_calib_amax, strict=False）
+  └─ 直接评估 val mAP（无反向传播）
+
+QAT Branch
+  └─ 加载 qat_runs/qat_dair_v1/best.pt（30 epoch 微调后的 checkpoint）
+  └─ 重新禁用 Detect Head quantizer（加载时会重新初始化并启用）
+  └─ 冻结 BN running stats
+  └─ 评估 val mAP
+```
+
+### 10.2 结果可视化
+
+```
+mAP50
+ 0.531 ┤                              ┌─── QAT (0.5309)
+ 0.529 ┤
+ 0.527 ┤
+ 0.525 ┤──────── FP32 (0.5255)
+       │
+ 0.524 ┤         PTQ (0.5249)
+       └────────────────────────────────────
+              FP32        PTQ         QAT
+```
+
+### 10.3 为什么 PTQ 已经足够好？
+
+- **NAS 搜索的架构优势**：硬件感知 NAS 在搜索阶段已将"低比特友好性"隐含地纳入了优化目标（通过限制通道数为 8/16 的整数倍、避免极端深度的残差连接），使得最终架构的激活分布自然平滑，极值点少。
+- **数据分布稳定**：DAIR-V2X 为车路协同数据集，相机视角固定、光照变化范围相对可控，激活统计量在校准集上具有代表性。
+- **混合精度的安全边际**：将最敏感的 Head 保留在 FP16，避免了量化误差在 bbox 回归上的累积放大。
+
+### 10.4 QAT 是否必要？
+
+| 场景 | 建议 |
+|:---|:---|
+| **追求极致部署速度**，可接受 <0.1% 精度损失 | **PTQ 足够**，无需额外训练开销 |
+| **论文/指标要求"精度零损失或提升"** | **QAT 更稳妥**，30 epoch 微调后精度反而略有提升 |
+| **后续出现域迁移**（如从 DAIR-V2X 迁移到 BDD100K）| **必须 QAT**，不同数据分布下 PTQ 掉点会显著增大 |
+
+---
+
 *报告结束。*
