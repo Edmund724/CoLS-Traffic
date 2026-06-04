@@ -115,26 +115,24 @@ conda activate gra
 ### 1. 神经架构搜索
 
 ```bash
-# 运行硬件感知 NAS 搜索
-python nas_fbnet/search_hw.py \
-  --config nas_fbnet/config_hw.py \
-  --dataset datasets/cifar10
+# 运行硬件感知 NAS 搜索（在 A40 开发机上）
+python run_search_hw.py
 ```
 
 ### 2. 检测模型训练
 
 ```bash
-# 训练 NAS-YOLO（支持知识蒸馏）
-python detection_bdd100k/train_nas_yolo.py \
-  --data detection_bdd100k/bdd100k.yaml \
-  --epochs 300
+# 训练 NAS-YOLO（支持知识蒸馏，在 Jetson 上执行）
+cd deploy
+python detection/train_nas_yolo.py --epochs 300
 ```
 
 ### 3. 模型量化与导出
 
 ```bash
-# 导出 ONNX
-python detection_bdd100k/export_onnx_yolo.py --weights best.pt --imgsz 640
+# 导出 ONNX（在 Jetson 上执行）
+cd deploy
+python detection/export_onnx_yolo.py --weights best.pt --imgsz 640
 
 # TensorRT PTQ / QAT 量化（需在 Jetson 上执行）
 # 生成 ptq_int8.engine / qat_int8.engine

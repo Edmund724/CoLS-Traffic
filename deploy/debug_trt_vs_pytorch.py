@@ -19,7 +19,7 @@ import torch
 import torchvision
 
 _HERE = Path(__file__).resolve().parent
-_DETECTION_DIR = _HERE / "detection_bdd100k"
+_DETECTION_DIR = _HERE / "detection"
 sys.path.insert(0, str(_DETECTION_DIR))
 
 from ultralytics.data import build_dataloader, build_yolo_dataset

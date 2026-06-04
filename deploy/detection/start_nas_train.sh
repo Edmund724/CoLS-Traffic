@@ -1,6 +1,6 @@
 #!/bin/bash
 # 正确启动 NAS 训练（nohup 守护进程，避免被意外杀死）
-cd /home/user/yuyue/gra/detection_bdd100k
+cd /home/user/yuyue/gra/deploy/detection
 LOG_DIR=runs/dair_v2x/logs
 mkdir -p "$LOG_DIR"
 
