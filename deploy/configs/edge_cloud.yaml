@@ -1,0 +1,144 @@
+# 云边协同动态路由系统配置
+
+# ── 数据集 ──────────────────────────────────────────────────────────────
+dataset:
+  data_yaml: "datasets/dair_v2x_yolo/dair_v2x.yaml"
+  imgsz: 640
+  nc: 10
+  names:
+    0: "car"
+    1: "truck"
+    2: "van"
+    3: "bus"
+    4: "pedestrian"
+    5: "cyclist"
+    6: "tricyclist"
+    7: "motorcyclist"
+    8: "barrowlist"
+    9: "trafficcone"
+
+# ── 本地边缘检测模型 ────────────────────────────────────────────────────
+edge_detector:
+  # 占位模型路径（前三阶段完成后替换为量化部署后的模型）
+  weights: "/home/nv/deploy/qat_int8.engine"
+  device: "cuda:0"  # 或 "cpu"
+  conf_threshold: 0.25
+  iou_threshold: 0.45
+  imgsz: 640
+
+# ── 场景复杂度评估器 ────────────────────────────────────────────────────
+complexity:
+  # 图像级特征阈值（用于规则基线路由）
+  blur_threshold: 50.0          # 拉普拉斯方差低于此值视为模糊
+  overexposure_threshold: 0.15  # 过曝像素比例阈值
+  underexposure_threshold: 0.15 # 欠曝像素比例阈值
+
+# ── 动态路由策略 ────────────────────────────────────────────────────────
+routing:
+  strategy: "rule_based"  # "rule_based" | "mlp" | "random"
+  
+  # 规则基线阈值策略
+  rule_based:
+    # 强制回退云端的条件（满足任一即回退）
+    force_cloud:
+      blur_laplacian_max: 50.0        # 拉普拉斯方差 < 此值
+      overexposure_min: 0.20          # 过曝比例 > 此值
+      underexposure_min: 0.20         # 欠曝比例 > 此值
+      low_conf_ratio_min: 0.50        # 低置信度框比例 > 此值
+      mean_confidence_max: 0.40       # 平均置信度 < 此值
+      object_density_max: 0.80        # 目标密度 > 此值（严重拥堵）
+    
+    # 强制本地推理的条件（满足任一即本地）
+    force_local:
+      object_density_max: 0.05        # 目标密度 < 此值（空旷道路）
+      mean_confidence_min: 0.80       # 平均置信度 > 此值（模型很确定）
+      blur_laplacian_min: 200.0       # 图像很清晰
+
+  # MLP 门控网络（预留，后续可训练）
+  mlp:
+    hidden_dims: [64, 32]
+    dropout: 0.2
+    checkpoint: null  # 训练完成后加载
+
+# ── 云端大模型 (VLM) ────────────────────────────────────────────────────
+# 支持三种模式：
+#   1. openrouter API（云端，如 qwen3-vl-8B）
+#   2. 本地 vLLM/Transformers 部署（服务器本地，如 Phi-3.5-vision / Qwen2-VL）
+#   3. Mock 模拟（开发调试用）
+cloud:
+  # --- 模式选择 ---
+  # 设为 "local" 使用本地部署，设为 "nim" 使用 第三方 API
+  mode: "local"
+
+  # --- 选项 A: 本地 llama.cpp server (Qwen3-VL) ---
+  # 注意：llama-server 默认无 TLS，必须用 http:// 而非 https://
+  local:
+    api_base: "http://192.168.2.100:8080/v1"
+    model: "Qwen3VL-30B-A3B-Instruct-Q4_K_M.gguf"
+    api_key: "not-needed"
+
+  # --- 选项 B: 第三方 API（备用）---
+  nim:
+    api_base: "https://openrouter.ai/api/v1"
+    model: "qwen/qwen3-vl-8b-instruct"
+    api_key: ""
+
+
+  # --- 通用推理参数 ---
+  temperature: 0.1   # 低温度，减少随机性
+  max_tokens: 512    # 小 VLM 输出短即可
+  timeout: 120.0     # Qwen3 thinking 模式可能输出较长，适当放宽
+
+  # --- 协同纠错 Prompt ---
+  # 针对小 VLM 简化指令，避免复杂推理导致输出不稳定
+  system_prompt: >
+    You are an autonomous driving detection validator.
+    I will give you a traffic image and some candidate bounding boxes detected by a lightweight edge model.
+    Your task: check these boxes against the image, then return ONLY a JSON array.
+    Rules:
+    1. Remove false positives (shadows, signs, etc. misdetected as objects)
+    2. Adjust imprecise boxes (too large, too small, or shifted)
+    3. Add missing objects (occluded, distant, or in bad weather)
+    4. Keep original class names
+    Output format: [{"class":"car","bbox":[x1,y1,x2,y2],"confidence":0.9},...]
+    Return [] if no objects. NO explanation, NO markdown, ONLY JSON.
+
+  # --- Mock 模拟延迟（开发调试用）---
+  # ModelScope Qwen3-VL-8B (云端API, 960px图): 实测 ~2.8s
+  cloud_inference_ms:
+    mean: 2800.0
+    std: 800.0
+    min: 1500.0
+
+  mock_cloud_accuracy_boost: 0.12
+
+# ── 延迟模拟器配置 ──────────────────────────────────────────────────────
+simulator:
+  # 是否用模拟延迟覆盖真实测得的边缘延迟
+  # false = 使用 detector.predict() 返回的真实延迟（Jetson 真实部署时设为 false）
+  # true  = 当真实延迟 < edge_latency_ms.min 时，用随机模拟值覆盖（开发调试时使用）
+  use_simulated_latency: false
+
+  # 边缘端延迟（ms）— 仅在 use_simulated_latency=true 时生效
+  edge_latency_ms:
+    mean: 25.0
+    std: 3.0
+    min: 15.0
+
+  # 云端推理延迟（ms）— 根据 VLM 大小调整
+  # 11B Llama-vision (NIM API): mean=3000, std=500, min=2000
+  # 4B Phi-3.5-vision (本地A100+Int4): mean=800, std=200, min=300
+  # 2B Qwen2-VL-2B (本地A100+Int4): mean=500, std=150, min=200
+  cloud_inference_ms:
+    mean: 800.0
+    std: 200.0
+    min: 300.0
+
+  # 网络传输延迟（ms）—  API（互联网）
+  network:
+    bandwidth_mbps: 10.0     # 上行带宽（Mbps）
+    base_rtt_ms: 30.0        # 基础往返延迟
+    jitter_ms: 10.0          # 抖动
+
+  # 仿真模式开关
+  use_real_api: true          # true = 真实调用 ModelScope API；false = mock 模拟

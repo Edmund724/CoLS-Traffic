@@ -1,0 +1,24 @@
+# BDD100K dataset config for Ultralytics YOLOv8
+# Adjust 'path' to your actual bdd100k root directory
+
+path: /home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/detection_bdd100k/datasets/bdd100k
+
+train: images/train   # 70,000 images
+val:   images/val     # 10,000 images
+test:  images/test    # 20,000 images
+
+# Number of classes
+nc: 10
+
+# Class names (must match convert_bdd100k.py order)
+names:
+  0: pedestrian
+  1: rider
+  2: car
+  3: truck
+  4: bus
+  5: train
+  6: motorcycle
+  7: bicycle
+  8: traffic light
+  9: traffic sign

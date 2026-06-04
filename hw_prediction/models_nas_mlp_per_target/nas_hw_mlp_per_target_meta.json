@@ -1,0 +1,82 @@
+{
+  "csv": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/trt_benchmark_results.csv",
+  "numeric_features": [
+    "ks",
+    "expand",
+    "width",
+    "depth_s1",
+    "depth_s2",
+    "depth_s3",
+    "depth_s4",
+    "params_m"
+  ],
+  "categorical_features": [
+    "infer_mode",
+    "precision"
+  ],
+  "feature_names_after_encode": [
+    "ks",
+    "expand",
+    "width",
+    "depth_s1",
+    "depth_s2",
+    "depth_s3",
+    "depth_s4",
+    "params_m",
+    "infer_mode_le",
+    "precision_le"
+  ],
+  "targets": [
+    "latency_p50_ms",
+    "power_avg_w"
+  ],
+  "n_train": 1080,
+  "n_val": 135,
+  "n_test": 136,
+  "shared_preprocess_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/preprocess_mlp_shared.joblib",
+  "label_encoder_classes": {
+    "infer_mode": [
+      "dla1gpu",
+      "dla2gpu",
+      "dla3gpu",
+      "only-dla",
+      "only-gpu"
+    ],
+    "precision": [
+      "fp16",
+      "int8"
+    ]
+  },
+  "mlp_hyperparams": {
+    "hidden": [
+      128,
+      256
+    ],
+    "dropout": 0.25,
+    "batch_size": 64,
+    "lr": 0.0001,
+    "weight_decay": 0.0005,
+    "patience": 40,
+    "epochs": 200
+  },
+  "per_target": {
+    "latency_p50_ms": {
+      "r2": 0.9361103718800742,
+      "rmse": 0.06946142175849193,
+      "epochs_ran": 200,
+      "best_val_rmse": 0.05488315116552724,
+      "model_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/mlp_latency_p50_ms.pt",
+      "preprocess_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/preprocess_mlp_latency_p50_ms.joblib",
+      "prediction_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/predictions_test_latency_p50_ms.tsv"
+    },
+    "power_avg_w": {
+      "r2": 0.8660003349465831,
+      "rmse": 0.1944938235698962,
+      "epochs_ran": 200,
+      "best_val_rmse": 0.21957033408024026,
+      "model_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/mlp_power_avg_w.pt",
+      "preprocess_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/preprocess_mlp_power_avg_w.joblib",
+      "prediction_path": "/home/user/lanzheng/projects/nas_codesign/pytorch_nas_jetson/hw_prediction/models_nas_mlp_per_target/predictions_test_power_avg_w.tsv"
+    }
+  }
+}
