@@ -1,6 +1,8 @@
-# GRA — 面向智能交通的边缘-云协同感知系统
+# CoLS-Traffic — 面向智能交通的边缘-云协同感知系统
 
 > **毕业设计项目** · 面向车路协同（V2X）场景的边缘 AI 实时感知系统
+>
+> **CoLS**: Collaborative Learning System for Traffic
 
 ---
 
