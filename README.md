@@ -30,43 +30,54 @@ PTQ / QAT 量化（INT8）       →  TensorRT Engine
 
 ```
 gra/
-├── nas_fbnet/              # 硬件感知神经架构搜索（FBNet）
-│   ├── search_hw.py        # NAS 搜索主入口
-│   ├── train_hw.py         # 超网络训练
-│   ├── hw_proxy_jetson.py  # Jetson 硬件代理（延迟/功耗测量）
-│   ├── search_space_hw.py  # 搜索空间定义
-│   └── models/             # MBConv / MobileNetV3 等模块
+├── nas_fbnet/                  # 硬件感知 NAS 搜索（A40 开发机用）
+│   ├── search_hw.py            # NAS 搜索主入口（硬件反馈）
+│   ├── train_hw.py             # 超网络训练
+│   ├── hw_proxy_jetson.py      # Jetson 硬件代理（延迟/功耗预测）
+│   ├── config_hw.py            # 搜索配置（硬件约束参数）
+│   ├── search_space_hw.py      # 搜索空间定义
+│   ├── checkpoint_naming.py    # 检查点命名工具
+│   └── models/                 # MBConv / MobileNetV3 骨干模块
 │
-├── nas_jetson_backbone/    # Jetson 骨干网络搜索（早期版本）
-│   ├── run_search.py
-│   └── train_dla.py
-│
-├── detection_bdd100k/      # BDD100K 检测模型训练
-│   ├── nas_yolo.py         # NAS-YOLO 模型定义
-│   ├── train_nas_yolo.py   # 训练脚本（支持知识蒸馏）
-│   └── cache_teacher_outputs.py
-│
-├── deploy/                 # 部署模块
-│   ├── trt_runtime.py      # TensorRT 双缓冲推理运行时
-│   ├── infer_trt.py        # TensorRT 推理脚本
-│   ├── benchmark_metrics.py # 精度/速度基准评测
-│   ├── edge_cloud_collab/  # 云边协同子系统
-│   │   ├── edge_detector.py       # 边缘检测器（TRT封装）
-│   │   ├── complexity_evaluator.py # 场景复杂度评估
-│   │   ├── dynamic_router.py      # 动态路由决策器
-│   │   ├── cloud_client.py        # 云端 VLM 客户端
-│   │   ├── simulator.py           # 云边协同仿真器
-│   │   └── demo.py                # 演示入口
-│   └── configs/edge_cloud.yaml    # 系统配置文件
-│
-├── hw_prediction/          # 硬件性能预测（MLP代理模型）
+├── hw_prediction/              # 硬件性能预测（MLP 代理模型）
 │   └── models_nas_mlp_per_target/
 │
-├── reports/                # 技术报告与文档
+├── run_search_hw.py            # NAS 搜索入口脚本
+│
+├── deploy/                     # Jetson 部署系统（自包含）
+│   ├── trt_runtime.py          # TensorRT 双缓冲推理运行时
+│   ├── infer_trt.py            # TRT 推理 + mAP 验证
+│   ├── benchmark_metrics.py    # 核心指标验证
+│   ├── benchmark_compare.py    # PyTorch vs TRT 速度对比
+│   ├── benchmark_edge_pipeline.py  # 边缘流水线测速
+│   ├── benchmark_accuracy_coop.py  # 协同纠错精度验证
+│   ├── calibrate_routing_thresholds.py  # 路由阈值标定
+│   ├── demo_presentation.py    # 答辩演示脚本
+│   ├── nas_fbnet/              # NAS 副本（含检测器参数估计）
+│   ├── detection/              # 检测训练/推理
+│   │   ├── nas_yolo.py         # NAS-YOLO 模型定义
+│   │   ├── train_nas_yolo.py   # 训练脚本（支持知识蒸馏）
+│   │   └── export_onnx_yolo.py # ONNX 导出
+│   ├── edge_cloud_collab/      # 云边协同子系统
+│   │   ├── edge_detector.py    # 边缘检测器（TRT 封装）
+│   │   ├── complexity_evaluator.py  # 场景复杂度评估
+│   │   ├── dynamic_router.py   # 动态路由决策器
+│   │   ├── cloud_client.py     # 云端 VLM 客户端
+│   │   ├── simulator.py        # 云边协同仿真器
+│   │   └── demo.py             # 演示入口
+│   └── configs/edge_cloud.yaml # 系统配置文件
+│
+├── reports/                    # 技术报告与文档
 │   ├── CHANGELOG.md
+│   ├── graduation_thesis_report.md
 │   └── figures/
 │
-└── environment.yml         # Conda 环境配置
+├── archive/                    # 历史版本归档（不入 Git）
+│   ├── nas_jetson_backbone/    # 早期 NAS 版本
+│   ├── detection_bdd100k/      # 早期检测模块
+│   └── edge_cloud_collab/      # 旧版云边协同
+│
+└── environment.yml             # Conda 环境配置
 ```
 
 ---
