@@ -2,7 +2,7 @@
 
 > **毕业设计项目** · 面向车路协同（V2X）场景的边缘 AI 实时感知系统
 >
-> **CoLS**: Collaborative Learning System for Traffic
+> **CoLS**: Collaboration via Large–Small Models
 
 ---
 
@@ -13,17 +13,17 @@
 **核心技术路线：**
 
 ```
-DAIR-V2X 数据集
+DAIR-V2X-V 车端数据集
       ↓
-Hardware-aware NAS (FBNet)  →  搜索最优骨干网络
+Hardware-aware NAS（贝叶斯优化）  →  最优骨干网络（0.78M）
       ↓
-YOLO 检测头训练（知识蒸馏）  →  NAS-YOLO 检测模型
+渐进式多任务知识蒸馏            →  NAS-YOLO 检测模型（2.75M，mAP50 52.55%）
       ↓
-PTQ / QAT 量化（INT8）       →  TensorRT Engine
+混合精度 QAT（INT8+FP16）       →  TensorRT Engine（mAP50 53.09%）
       ↓
-边缘部署 (Jetson Orin Nano)  →  实时推理
+边缘部署 (Jetson Orin Nano Super) →  实时推理（65.8 FPS，加速 7.06×）
       ↓
-场景复杂度门控 + 动态路由    →  云边协同纠错
+场景复杂度评估 + 动态路由        →  Review 模式云边协同纠错（+14.0%）
 ```
 
 ---
@@ -124,7 +124,7 @@ CoLS-Traffic/
 
 | 组件 | 规格 |
 |------|------|
-| 边缘设备 | NVIDIA Jetson Orin Nano Super（40 TOPS）|
+| 边缘设备 | NVIDIA Jetson Orin Nano Super（67 TOPS INT8，7–25W）|
 | 开发机 GPU | NVIDIA GPU（CUDA 12.8）|
 | RAM | ≥ 16 GB |
 
@@ -170,8 +170,8 @@ python detection/train_nas_yolo.py --epochs 300
 cd deploy
 python detection/export_onnx_yolo.py --weights best.pt --imgsz 640
 
-# TensorRT PTQ / QAT 量化（需在 Jetson 上执行）
-# 生成 ptq_int8.engine / qat_int8.engine
+# TensorRT QAT 量化（需在 Jetson 上执行）
+# 生成 qat_int8.engine（QAT 为最终部署方案，PTQ 仅用于对比实验）
 ```
 
 ### 4. TensorRT 推理
@@ -198,20 +198,19 @@ python -m deploy.edge_cloud_collab.simulator \
 
 | 模块 | 方法 | 效果 |
 |------|------|------|
-| NAS 骨干搜索 | FBNet + 硬件代理（延迟/功耗约束） | 自动生成适配 Jetson 的最优子网络 |
-| 知识蒸馏 | Teacher-Student 框架（YOLOv8 → NAS-YOLO） | mAP 损失 < 1.5% |
-| 量化感知训练 | QAT INT8（vs PTQ） | 精度无损，推理速度 ↑ |
-| TensorRT 部署 | 双缓冲流水线 + CUDA Graph | 吞吐提升 5×+ |
-| 动态路由 | 场景复杂度门控（规则/MLP） | 复杂场景识别率 ↑ 10%+ |
-| 云边协同 | 本地 TRT + 远端 VLM（Qwen3-VL） | 端到端 < 100ms（简单场景） |
+| NAS 骨干搜索 | MBConv 搜索空间 + 贝叶斯优化 + MLP 硬件代理 | 骨干 0.78M → 检测模型 2.75M，压缩比 4.06×（vs YOLOv8s 11.17M）|
+| 渐进式知识蒸馏 | 三阶段调度 + 分类/定位/特征（AT）三信号蒸馏 | 学生 mAP@50 从 43.05% → 52.55%（+9.50pp）|
+| 混合精度 QAT | Backbone/Neck INT8 + Detect Head FP16，覆盖率 81.3% | mAP@50 53.09%（+0.54%），精度不降反升 |
+| TensorRT 部署 | INT8/FP16 混合引擎 + 双 CUDA 流流水线并行 | 65.8 FPS，加速比 7.06×（vs PyTorch 9.3 FPS），单帧 22.3ms |
+| 动态路由 | 13 维场景复杂度特征 + 多层级阈值三级判定 | 决策延迟 <5ms，云端回退比例 10%~20% |
+| 云边协同 Review 模式 | 边缘 TRT + 远端 Qwen3-VL-8B（仅审查低置信度框） | 复杂场景 Precision@IoU=0.5 相对提升 14.0%，端到端 <75ms |
 
 ---
 
 ## 数据集
 
-- **DAIR-V2X**：车路协同感知数据集（主实验数据集）
-- **BDD100K**：自动驾驶感知数据集（辅助训练）
-- **CIFAR-10**：NAS 搜索阶段代理数据集
+- **DAIR-V2X-V**：车端视角车路协同感知数据集（主实验数据集，22,325 帧）
+- **CIFAR-10**：NAS 搜索阶段代理数据集（60,000 张 32×32 图像）
 
 > 数据集文件体积较大，已放置在 `datasets/` 目录，不纳入 Git 管理。部署端使用 `deploy/datasets/` 目录。
 
