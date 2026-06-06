@@ -1,6 +1,6 @@
 # CoLS-Traffic — 面向智能交通的边缘-云协同感知系统
 
-> **毕业设计项目** · 面向车路协同（V2X）场景的边缘 AI 实时感知系统
+> 面向车路协同（V2X）场景的边缘 AI 实时感知系统
 >
 > **CoLS**: Collaboration via Large–Small Models
 
@@ -106,11 +106,6 @@ CoLS-Traffic/
 │   ├── thesis_tables.md            # 论文可引用表格
 │   ├── benchmark_data.json / figure_data.csv
 │   └── figures/                    # 报告用图片
-│
-├── archive/                        # 历史版本归档（不入 Git）
-│   ├── nas_jetson_backbone/        # 早期 NAS 版本
-│   ├── detection_bdd100k/          # 早期检测模块
-│   └── edge_cloud_collab/          # 旧版云边协同
 │
 ├── environment.yml                 # Conda 环境配置
 └── .gitignore
@@ -238,4 +233,4 @@ python -m deploy.edge_cloud_collab.simulator \
 
 ## License
 
-Private — 仅供学术研究与毕业设计使用。
+This project is licensed under the [MIT License](LICENSE).
