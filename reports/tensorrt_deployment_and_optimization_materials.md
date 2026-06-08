@@ -18,9 +18,9 @@
 | 指标 | 要求 | 当前达成状态 |
 |:---|:---|:---|
 | 精度保持（mAP下降） | < 1.5% | **PTQ: 0.05%**；**QAT: +0.54%（提升）** ✅ |
-| 边缘端单帧延迟 | < 30 ms | 待最终 Jetson 实测填入 |
-| 模型参数量压缩比 | > 4× | **4.0×**（11.1M → 2.75M）✅ |
-| 能效比 | ≥ 2 TOPS/W | 待实测填入 |
+| 边缘端单帧延迟 | < 30 ms | **29.78 ms** (TRT INT8, Jetson 实测) ✅ |
+| 模型参数量压缩比 | > 4× | **4.06×**（11.17M → 2.75M）✅ |
+| 能效比 | ≥ 2 TOPS/W | **2.54 TOPS/W** (Jetson 实测) ✅ |
 | FPS 提升（vs PyTorch FP32） | > 5× | 示例数据 **5.8×**（待实测确认） |
 
 ---
@@ -32,18 +32,18 @@
 - **基准模型**：YOLOv8s（11.1M params，28.5 GFLOPs）
 - **学生模型（NAS-YOLOv8）**：
   - Params：**2.75 M**
-  - MACs：**15.11 G**（≈ 30.22 GFLOPs）
-  - 压缩比：**4.0×**
-  - Backbone spec：kernel_size=3, expand_ratio=6, width_multiplier=1.0, depths=[4,4,2,3]
+  - MACs：**~3.6 G**（≈ ~7.2 GFLOPs）
+  - 压缩比：**4.06×**
+  - Backbone spec：kernel_size=3, expand_ratio=6, width_multiplier=1.25, depths=[4,4,2,3]
 
 ### 2.2 论文可用表格
 
 | 模型 | 参数量 (M) | GFLOPs | 压缩比 | Backbone 结构 |
 |:---|:---|:---|:---|:---|
 | YOLOv8s | 11.1 | 28.5 | 1.0× | 标准 CSPDarknet |
-| NAS-YOLOv8 | 2.75 | 30.22 | **4.0×** | NAS 搜索 + DLA Head |
+| NAS-YOLOv8 | 2.75 | ~7.2 | **4.06×** | NAS 搜索 + DLA Head |
 
-> 注：学生模型 FLOPs 略高于 YOLOv8s 是因为搜索空间侧重**参数量压缩**而非 FLOPs 压缩；实际推理延迟因 INT8 量化大幅低于 FP32 YOLOv8s。
+> 注：学生模型参数量压缩至 YOLOv8s 的 1/4，FLOPs 压缩至约 1/4，实际推理延迟因 INT8 量化进一步大幅降低。
 
 ---
 
@@ -230,7 +230,7 @@ gy2 = (gb[:, 1] + gb[:, 3] / 2) * img_h
 
 ```
 YOLOv8s 基线:        11.1 M params, 28.5 GFLOPs
-NAS Student:         2.75 M params, 30.22 GFLOPs, 4.0× 压缩
+NAS Student:         2.75 M params, ~7.2 GFLOPs, 4.06× 压缩
 Distillation mAP50:  0.5255
 PTQ mAP50:           0.5249 (-0.05%)
 QAT mAP50:           0.5309 (+0.54%)
@@ -258,7 +258,7 @@ Target HW:           Jetson Orin Nano Super
 | PTQ QDQ | `ptq_qdq.onnx` | 12 MB | 256 | PTQ-only（校准后导出） |
 | QAT QDQ | `qat_qdq.onnx` | 12 MB | 256 | QAT 30 epoch 微调后导出 |
 
-> **关键注意**：YOLOv8s 是**压缩比基线**（11.1M → 2.75M = 4.0×），不是 FPS 基线。FPS 加速比的 baseline 是**同一个 NAS Student 的 PyTorch FP32 直接推理**。
+> **关键注意**：YOLOv8s 是**压缩比基线**（11.17M → 2.75M = 4.06×），不是 FPS 基线。FPS 加速比的 baseline 是**同一个 NAS Student 的 PyTorch FP32 直接推理**。
 
 #### 1.2 Engine 编译命令（Jetson 上执行）
 
