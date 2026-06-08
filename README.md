@@ -1,6 +1,6 @@
-# CoLS-Traffic — Edge-Cloud Collaborative Perception for Intelligent Traffic
+# CoLS-Traffic: Dual-System Agentic Collaboration via Large–Small Models for Edge–Cloud Perception in Intelligent Transportation
 
-> An edge AI real-time perception system for Vehicle-to-Everything (V2X) scenarios
+> A dual-system edge–cloud collaborative perception framework for Vehicle-to-Everything (V2X) scenarios
 >
 > **CoLS**: Collaboration via Large–Small Models
 
@@ -10,22 +10,24 @@
 
 ## Overview
 
-To address the dilemma in Intelligent Transportation Systems (ITS) where *high-compute large models are difficult to deploy on edge devices while low-compute small models lack generalization*, this project builds a **"Cloud Large Model (Generalist) + Edge Small Model (Specialist)"** collaborative perception system, covering the full pipeline from Neural Architecture Search and model quantization to edge deployment and cloud-edge collaboration.
+In Intelligent Transportation Systems (ITS), high-accuracy deep neural networks incur prohibitive latency and computational costs for edge deployment, whereas lightweight models exhibit limited generalization under complex or rare traffic scenarios. This accuracy–latency–efficiency trilemma constitutes a persistent bottleneck for high-performance automated perception.
+
+To address this challenge, we propose **CoLS-Traffic**, a dual-system collaborative perception framework that synergistically leverages a cloud-based large model (generalist) and an FPGA-class edge small model (specialist). A pretrained vision–language model (VLM) evaluates scene complexity and routes simple cases to the ultra-fast edge detector while escalating complex or uncertain instances to the cloud model. A confidence-based fallback mechanism further ensures reliability by automatically forwarding low-confidence edge predictions for cloud review. The complete pipeline encompasses hardware-aware Neural Architecture Search (NAS), progressive knowledge distillation, mixed-precision quantization-aware training (QAT), algorithm–chip co-optimized TensorRT deployment, and agentic cloud–edge collaboration.
 
 **Core Technical Pipeline:**
 
 ```
 DAIR-V2X-V Vehicle-Side Dataset
       ↓
-Hardware-aware NAS (Bayesian Optimization)  →  Optimal Backbone (0.78M params)
+Hardware-Aware NAS (Bayesian Optimization)    →  Optimal Backbone (0.78M params)
       ↓
-Progressive Multi-task Knowledge Distillation →  NAS-YOLO Detector (2.75M, mAP50 52.55%)
+Progressive Multi-Task Knowledge Distillation →  NAS-YOLO Detector (2.75M, mAP@50 52.55%)
       ↓
-Mixed-precision QAT (INT8+FP16)            →  TensorRT Engine (mAP50 53.09%)
+Mixed-Precision QAT (INT8 + FP16)            →  TensorRT Engine (mAP@50 53.09%)
       ↓
-Edge Deployment (Jetson Orin Nano Super)   →  Real-time Inference (65.8 FPS, 7.06× speedup)
+Edge Deployment (Jetson Orin Nano Super)      →  Real-Time Inference (65.8 FPS, 7.06× speedup)
       ↓
-Scene Complexity Evaluation + Dynamic Routing →  Review-mode Cloud-Edge Collaboration (+14.0%)
+Scene Complexity Evaluation + Dynamic Routing →  Review-Mode Cloud–Edge Collaboration (+14.0%)
 ```
 
 ---
@@ -195,21 +197,21 @@ python -m deploy.edge_cloud_collab.simulator \
 
 | Module | Method | Result |
 |--------|--------|--------|
-| NAS Backbone Search | MBConv search space + Bayesian optimization + MLP hardware proxy | Backbone 0.78M → detector 2.75M, compression ratio 4.06× (vs YOLOv8s 11.17M) |
-| Progressive Knowledge Distillation | 3-stage scheduling + classification/localization/feature (AT) triple-signal distillation | Student mAP@50 from 43.05% → 52.55% (+9.50pp) |
-| Mixed-precision QAT | Backbone/Neck INT8 + Detect Head FP16, coverage 81.3% | mAP@50 53.09% (+0.54%), accuracy improves rather than degrades |
-| TensorRT Deployment | INT8/FP16 mixed engine + dual CUDA stream pipeline parallelism | 65.8 FPS, speedup 7.06× (vs PyTorch 9.3 FPS), 22.3ms per frame |
-| Dynamic Routing | 13-dim scene complexity features + multi-level threshold 3-tier decision | Decision latency <5ms, cloud fallback ratio 10%–20% |
-| Cloud-Edge Review Mode | Edge TRT + remote Qwen3-VL-8B (reviews only low-confidence boxes) | Complex scene Precision@IoU=0.5 improved by 14.0% relatively, E2E <75ms |
+| NAS Backbone Search | MBConv search space + Bayesian optimization + MLP hardware proxy | Backbone 0.78 M → detector 2.75 M; compression ratio of 4.06× vs. YOLOv8s (11.17 M) |
+| Progressive Knowledge Distillation | Three-stage scheduling with classification, localization, and feature-level (AT) distillation signals | Student mAP@50: 43.05% → 52.55% (+9.50 pp) |
+| Mixed-Precision QAT | Backbone/Neck INT8 + Detect Head FP16; INT8 coverage 81.3% | mAP@50 53.09% (+0.54 pp); accuracy is preserved post-quantization |
+| TensorRT Deployment | INT8/FP16 mixed-precision engine + dual-CUDA-stream pipeline parallelism | 65.8 FPS, 7.06× speedup over PyTorch (9.3 FPS); per-frame latency 22.3 ms |
+| Dynamic Routing | 13-dimensional scene complexity features + multi-level threshold three-tier decision | Decision latency < 5 ms; cloud fallback ratio 10%–20% |
+| Cloud–Edge Review Mode | Edge TRT detector + remote Qwen3-VL-8B (reviews only low-confidence bounding boxes) | Precision@IoU = 0.5 improved by 14.0% (relative) on complex scenes; end-to-end latency < 75 ms |
 
 ---
 
 ## Datasets
 
-- **DAIR-V2X-V**: Vehicle-side V2X perception dataset (primary experimental dataset, 22,325 frames)
-- **CIFAR-10**: NAS search proxy dataset (60,000 32×32 images)
+- **DAIR-V2X-V**: Vehicle-side cooperative perception dataset (primary experimental dataset; 22,325 frames).
+- **CIFAR-10**: Proxy dataset for the NAS search phase (60,000 images at 32 × 32 resolution).
 
-> Dataset files are large and placed in the `datasets/` directory, excluded from Git tracking. The deployment-side uses `deploy/datasets/`.
+> Dataset files are voluminous and are therefore placed in the `datasets/` directory, excluded from version control. The deployment-side dataset resides in `deploy/datasets/`.
 
 ---
 
