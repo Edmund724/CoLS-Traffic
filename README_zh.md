@@ -100,14 +100,11 @@ CoLS-Traffic/
 │
 ├── reports/                        # 技术报告与文档
 │   ├── CHANGELOG.md                # 开发日志与版本变更
-│   ├── graduation_thesis_report.md # 毕业设计综合报告
-│   ├── merged_practice_report.md   # 综合实践报告
-│   ├── qat_implementation_report.md
+│   ├── merged_practice_report.md   # 综合实践报告（主报告）
 │   ├── tensorrt_deployment_and_optimization_materials.md
 │   ├── dynamic_routing_strategy.md
 │   ├── double_buffer_pipeline.md
 │   ├── power_efficiency_calculation.md
-│   ├── thesis_tables.md            # 论文可引用表格
 │   ├── benchmark_data.json / figure_data.csv
 │   └── figures/                    # 报告用图片
 │
@@ -222,14 +219,11 @@ python -m deploy.edge_cloud_collab.simulator \
 | 报告 | 内容 |
 |------|------|
 | `CHANGELOG.md` | 开发日志与版本变更（权威版） |
-| `graduation_thesis_report.md` | 毕业设计综合报告 |
-| `merged_practice_report.md` | 综合实践报告 |
-| `qat_implementation_report.md` | QAT 量化训练实现与 PTQ 对比分析 |
+| `merged_practice_report.md` | 综合实践报告（NAS + 蒸馏 + QAT + 部署） |
 | `tensorrt_deployment_and_optimization_materials.md` | TensorRT 部署与优化 |
-| `dynamic_routing_strategy.md` | 动态路由策略设计 |
-| `double_buffer_pipeline.md` | 双缓冲流水线设计 |
-| `power_efficiency_calculation.md` | 能效比计算与分析 |
-| `thesis_tables.md` | 论文可直接引用的表格（Markdown + LaTeX） |
+| `dynamic_routing_strategy.md` | 动态路由策略与阈值标定 |
+| `double_buffer_pipeline.md` | 双缓冲流水线并行设计 |
+| `power_efficiency_calculation.md` | 能效比计算（有效算力法） |
 | `benchmark_data.json` / `figure_data.csv` | 基准测试原始数据 |
 | `figures/` | 报告用图片（性能曲线、对比图表等） |
 

@@ -100,14 +100,11 @@ CoLS-Traffic/
 │
 ├── reports/                        # Technical reports & documentation
 │   ├── CHANGELOG.md                # Development log & version changes
-│   ├── graduation_thesis_report.md # Graduation thesis comprehensive report
-│   ├── merged_practice_report.md   # Integrated practice report
-│   ├── qat_implementation_report.md
+│   ├── merged_practice_report.md   # Integrated practice report (master)
 │   ├── tensorrt_deployment_and_optimization_materials.md
 │   ├── dynamic_routing_strategy.md
 │   ├── double_buffer_pipeline.md
 │   ├── power_efficiency_calculation.md
-│   ├── thesis_tables.md            # Paper-citable tables
 │   ├── benchmark_data.json / figure_data.csv
 │   └── figures/                    # Report images
 │
@@ -222,14 +219,11 @@ The `reports/` directory contains detailed technical reports for each phase:
 | Report | Content |
 |--------|---------|
 | `CHANGELOG.md` | Development log & version changes (authoritative) |
-| `graduation_thesis_report.md` | Graduation thesis comprehensive report |
-| `merged_practice_report.md` | Integrated practice report |
-| `qat_implementation_report.md` | QAT training implementation & PTQ comparison |
+| `merged_practice_report.md` | Integrated practice report (NAS + distillation + QAT + deployment) |
 | `tensorrt_deployment_and_optimization_materials.md` | TensorRT deployment & optimization |
-| `dynamic_routing_strategy.md` | Dynamic routing strategy design |
-| `double_buffer_pipeline.md` | Double-buffer pipeline design |
-| `power_efficiency_calculation.md` | Power efficiency calculation & analysis |
-| `thesis_tables.md` | Paper-citable tables (Markdown + LaTeX) |
+| `dynamic_routing_strategy.md` | Dynamic routing strategy & threshold calibration |
+| `double_buffer_pipeline.md` | Double-buffer pipeline parallelism design |
+| `power_efficiency_calculation.md` | Power efficiency calculation (effective compute method) |
 | `benchmark_data.json` / `figure_data.csv` | Raw benchmark data |
 | `figures/` | Report images (performance curves, comparison charts, etc.) |
 
